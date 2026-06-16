@@ -23,15 +23,12 @@ function App() {
       const isZip = /^\d{5}$/.test(trimmed);
       const query = isZip ? `zip=${trimmed},us` : `q=${trimmed}`;
 
-      const [weatherRes, forecastRes, geoRes] = await Promise.all([
+      const [weatherRes, forecastRes] = await Promise.all([
         axios.get(
-          `https://api.openweathermap.org/data/2.5/weather?${query}&appid=${API_KEY}&units=imperial`,
+          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=imperial`,
         ),
         axios.get(
-          `https://api.openweathermap.org/data/2.5/forecast?${query}&appid=${API_KEY}&units=imperial`,
-        ),
-        axios.get(
-          `https://api.openweathermap.org/geo/1.0/reverse?lat=${0}&lon=${0}&limit=1&appid=${API_KEY}`,
+          `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&units=imperial`,
         ),
       ]);
       setWeather(weatherRes.data);
