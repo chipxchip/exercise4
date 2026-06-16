@@ -18,20 +18,28 @@ function App() {
     setWeather(null);
     setForecast(null);
 
-    try {
-      const trimmed = city.trim();
-      const isZip = /^\d{5}$/.test(trimmed);
-      const query = isZip ? `zip=${trimmed},us` : `q=${trimmed}`;
+    const trimmed = city.trim();
+    const isZip = /^\d{5}$/.test(trimmed);
+    const query = isZip ? `zip=${trimmed},us` : `q=${trimmed}`;
 
-      const [weatherRes, forecastRes] = await Promise.all([
+    try {
+      const weatherRes = await axios.get(
+        `https://api.openweathermap.org/data/2.5/weather?${query}&appid=${API_KEY}&units=imperial`,
+      );
+
+      const { lat, lon } = weatherRes.data.coord;
+
+      const [forecastRes, geoRes] = await Promise.all([
         axios.get(
-          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=imperial`,
+          `https://api.openweathermap.org/data/2.5/forecast?${query}&appid=${API_KEY}&units=imperial`,
         ),
         axios.get(
-          `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&units=imperial`,
+          `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`,
         ),
       ]);
-      setWeather(weatherRes.data);
+
+      const state = geoRes.data?.[0]?.state || weatherRes.data.sys.country;
+      setWeather({ ...weatherRes.data, state });
       setForecast(forecastRes.data);
     } catch (err) {
       setError("City not found. Please try again.");
@@ -112,5 +120,4 @@ function App() {
     </div>
   );
 }
-
 export default App;
